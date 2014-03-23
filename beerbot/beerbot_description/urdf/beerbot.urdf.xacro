@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="beerbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- The following included files set up definitions of parts of the robot body -->
+  <xacro:include filename="$(find beerbot_description)/urdf/base.urdf.xacro" />
+  <xacro:include filename="$(find beerbot_description)/urdf/kinect_camera.urdf.xacro" />
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find beerbot_description)/urdf/beerbot.gazebo" />
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find beerbot_description)/urdf/materials.urdf.xacro" />
+
+  <!-- Now we can start using the macros included above to define the actual beerbot -->
+  <beerbot_base name="base" color="Brown"/>
+
+  <!-- Camera -->
+  <kinect_camera name="head_camera" parent="base_link">
+    <origin xyz="0 0 0.35" rpy="0 0 0"/>
+  </kinect_camera>
+
+  <!-- extensions -->
+  <xacro:beerbot_base_gazebo />
+
+</robot>

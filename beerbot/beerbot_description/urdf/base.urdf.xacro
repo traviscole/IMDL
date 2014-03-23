@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="ground_clearance" value="0.0740" />
+  <xacro:property name="level1_clearance" value="0.18" />
+  <xacro:property name="level2_clearance" value="0.24" />
+  <xacro:property name="level3_clearance" value="0.305" />
+  <xacro:property name="wheel_offset_y" value="0.116" />
+  <xacro:property name="wheel_length" value="0.02032" />
+  <xacro:property name="wheel_radius" value="0.06191" />
+  <xacro:property name="swivel_length" value="0.019" />
+  <xacro:property name="swivel_radius" value="0.025" />
+  <xacro:property name="base_radius" value="0.15" />
+  <xacro:property name="base_collision_radius" value="0.20" />
+  <xacro:property name="base_collision_top_clearance" value="0.10" />
+  <xacro:property name="base_length" value="0.006" />
+  <xacro:property name="sonar_clearance" value="${level2_clearance+0.02}" />
+  <xacro:property name="sonar_angle" value="0.7854" /> <!-- 45* -->
+
+
+  <!-- define a rotating wheel -->
+  <xacro:macro name="beerbot_wheel" params="suffix parent reflect color">
+    <joint name="${parent}_${suffix}_wheel_joint" type="continuous">
+      <axis xyz="0 0 1" />
+      <limit effort="100" velocity="100"/>
+      <safety_controller k_velocity="10" />
+      <origin xyz="0 ${reflect*wheel_offset_y} ${wheel_radius}" rpy="${reflect*1.57} 0 0" />
+      <parent link="${parent}_link"/>
+      <child link="${parent}_${suffix}_wheel_link"/>
+    </joint>
+    <link name="${parent}_${suffix}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+        <material name="${color}" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia 
+          ixx="1e-3" ixy="0.0" ixz="0.0" 
+          iyy="1e-3" iyz="0.0" 
+          izz="1e-3"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <!-- define a sonar -->
+  <xacro:macro name="beerbot_sonar" params="suffix parent offset_x offset_y angle color">
+    <joint name="${parent}_${suffix}_sonar_joint" type="fixed">
+      <origin xyz="${offset_x} ${offset_y} ${sonar_clearance}" rpy="0 0 ${angle}" />
+      <parent link="${parent}_link"/>
+      <child link="${parent}_${suffix}_sonar_link"/>
+    </joint>
+    <link name="${parent}_${suffix}_sonar_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="-1.57 0 1.57" />
+        <geometry>
+          <mesh filename="package://beerbot_description/meshes/sonar.stl"  /> 
+        </geometry>
+        <material name="${color}" />
+      </visual>
+    </link>
+  </xacro:macro>
+
+  <!-- The xacro macro beerbot_base contains: base and wheels -->
+  <xacro:macro name="beerbot_base" params="name color">
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 ${ground_clearance}" rpy="0 0 0" />
+        <geometry>
+          <!-- <mesh filename="package://beerbot_description/meshes/base.stl"  /> -->
+	  <cylinder radius="${base_radius}" length="${base_length}"/>
+        </geometry>
+        <material name="${color}" />
+      </visual>
+      <visual>
+        <origin xyz="0 0 ${level1_clearance}" rpy="0 0 0" />
+        <geometry>
+	  <cylinder radius="${base_radius}" length="${base_length}"/>
+        </geometry>
+        <material name="${color}" />
+      </visual>
+      <visual>
+        <origin xyz="0 0 ${level2_clearance}" rpy="0 0 0" />
+        <geometry>
+	  <cylinder radius="${base_radius}" length="${base_length}"/>
+        </geometry>
+        <material name="${color}" />
+      </visual>
+      <visual>
+        <origin xyz="0 0 ${level3_clearance}" rpy="0 0 0" />
+        <geometry>
+	  <cylinder radius="${base_radius}" length="${base_length}"/>
+        </geometry>
+        <material name="${color}" />
+      </visual> 
+      <!-- fixed wheels, without tf transform, just for visualization -->
+      <visual>
+        <origin xyz="0 ${1*wheel_offset_y} ${wheel_radius}" rpy="1.57 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+        <material name="Orange" />
+      </visual>
+      <visual>
+        <origin xyz="0 ${-1*wheel_offset_y} ${wheel_radius}" rpy="1.57 0 0" />
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+        <material name="Orange" />
+      </visual>
+      <!-- split collision object of base in two, one below lidar, and one on top lidar
+      to keep lidar free for object detection (otherwise it would be blocked by collision object) -->
+      <collision>
+      <origin xyz="0 0 ${level2_clearance/2}" rpy="0 0 0" /> 
+        <geometry>
+          <cylinder radius="${base_collision_radius}" length="${level2_clearance}"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin xyz="0 0 ${level3_clearance+base_collision_top_clearance/2}" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${base_collision_radius}" length="${base_collision_top_clearance}"/>
+        </geometry>
+      </collision> 
+      <inertial>
+        <origin xyz="0 0 ${base_radius}" rpy="0 0 0"/> 
+        <mass value="5"/>
+        <inertia 
+          ixx="10e-3" ixy="0.0" ixz="0.0" 
+          iyy="10e-3" iyz="0.0" 
+          izz="10e-3"/>
+      </inertial>
+    </link>
+  
+    <!-- drive wheels -->
+    <!--<beerbot_wheel parent="${name}" suffix="l" reflect="1" color="Orange"/>
+    <beerbot_wheel parent="${name}" suffix="r" reflect="-1" color="Orange"/>-->
+
+    <!-- sonars -->
+    <beerbot_sonar parent="${name}" offset_x="0.115" offset_y="-0.055" angle="-${sonar_angle}" suffix="fr" color="Blue"/>
+    <beerbot_sonar parent="${name}" offset_x="0.125" offset_y="0" angle="0" suffix="fc" color="Blue"/>
+    <beerbot_sonar parent="${name}" offset_x="0.115" offset_y="0.055" angle="${sonar_angle}" suffix="fl" color="Blue"/>
+	
+  </xacro:macro>
+
+</robot>

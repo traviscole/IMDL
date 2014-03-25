@@ -46,21 +46,15 @@ void on_trackbar( int, void* )
 {//This function gets called whenever a
 	// trackbar position is changed
 
-
-
-
-
 }
-string intToString(int number){
-
-
+string intToString(int number)
+{
 	std::stringstream ss;
 	ss << number;
 	return ss.str();
 }
 void createTrackbars(){
 	//create window for trackbars
-
 
     namedWindow(trackbarWindowName,0);
 	//create memory to store trackbar name on window
@@ -83,10 +77,8 @@ void createTrackbars(){
     createTrackbar( "V_MIN", trackbarWindowName, &V_MIN, V_MAX, on_trackbar );
     createTrackbar( "V_MAX", trackbarWindowName, &V_MAX, V_MAX, on_trackbar );
 
-
 }
 void drawObject(int x, int y,Mat &frame){
-
 	//use some of the openCV drawing functions to draw crosshairs
 	//on your tracked image!
 
@@ -160,7 +152,8 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed){
 					y = moment.m01/area;
 					objectFound = true;
 					refArea = area;
-				}else objectFound = false;
+				}
+				else objectFound = false;
 
 
 			}
@@ -170,7 +163,8 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed){
 				//draw object location on screen
 				drawObject(x,y,cameraFeed);}
 
-		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+		}
+		else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
 }
 int main(int argc, char* argv[])
@@ -226,11 +220,6 @@ int main(int argc, char* argv[])
 		//image will not appear without this waitKey() command
 		waitKey(30);
 	}
-
-
-
-
-
 
 	return 0;
 }

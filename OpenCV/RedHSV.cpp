@@ -10,7 +10,7 @@ using namespace std;
 int main()
 {
 	cv::VideoCapture capture;
-    cv::Mat input, convertedOutput,imgThreshed;
+	cv::Mat input, convertedOutput,imgThreshed;
 
     string videoPath = "http://10.0.1.178/mjpg/video.mjpg";
 

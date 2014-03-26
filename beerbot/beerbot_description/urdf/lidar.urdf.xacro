@@ -10,7 +10,7 @@
     </joint>
     <link name="${name}_link">
       <visual>
-        <origin xyz="0 0 -0.01718" rpy="0 0 0" />
+        <origin xyz="0 0 -0.01718" rpy="0 0 180" />
         <geometry>
 	  <!-- <mesh filename="package://frobo_description/meshes/lidar.stl" /> -->
           <cylinder radius="0.05" length="0.05211"/>

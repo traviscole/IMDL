@@ -13,13 +13,13 @@
       <link name="${name}_link">
         <inertial_sphere mass="0.01" diameter="0.07" />
         <visual>
-          <origin xyz="0 0 0" rpy="0 0 180" />
+          <origin xyz="0 0 0" rpy="0 0 1.57" />
           <geometry>
             <mesh filename="package://beerbot_description/meshes/kinect_camera_simple.dae"/>
           </geometry>
         </visual>
         <collision>
-          <origin xyz="0 0 0" rpy="0 0 180" />
+          <origin xyz="0 0 0" rpy="0 0 1.57" />
           <geometry>
             <mesh filename="package://beerbot_description/meshes/kinect_camera_simple.stl"/>
           </geometry>
@@ -27,7 +27,7 @@
       </link>
 
       <joint name="${name}_depth_joint" type="fixed">
-        <origin xyz="0.0 -0.02 0.0" rpy="0 0 180" />
+        <origin xyz="0.0 -0.02 0.0" rpy="0 0 1.57" />
         <parent link="${name}_link" />
         <child link="${name}_depth_frame"/>
       </joint>
@@ -43,7 +43,7 @@
       <link name="${name}_depth_optical_frame"/>
 
       <joint name="${name}_rgb_joint" type="fixed">
-        <origin xyz="0.0 -0.0125 0.0" rpy="0 0 180" />
+        <origin xyz="0.0 -0.0125 0.0" rpy="0 0 1.57" />
         <parent link="${name}_link" />
         <child link="${name}_rgb_frame"/>
       </joint>

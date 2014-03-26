@@ -43,8 +43,8 @@ accel_limit: 1.0
 #	  * PhidgetsCurrent (20 Amp, DC)
 
 sensors: {
-  motor_current_left:   {pin: 14, type: PololuMotorCurrent, rate: 2},
-  motor_current_right:  {pin: 15, type: PololuMotorCurrent, rate: 2},
+  motor_current_left:   {pin: 15, type: PololuMotorCurrent, rate: 2},
+  motor_current_right:  {pin: 14, type: PololuMotorCurrent, rate: 2},
 #  sonar_front_left:   {pin: 0, type: LaserScanPing, rate: 2, frame_id: /base_fl_sonar_link},
 #  sonar_front_center:   {pin: 1, type: LaserScanPing, rate: 2, frame_id: /base_fc_sonar_link},
 #  sonar_front_right:   {pin: 2, type: LaserScanPing, rate: 2, frame_id: /base_fr_sonar_link},

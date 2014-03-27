@@ -19,7 +19,7 @@ base_frame: base_link
 wheel_diameter: 0.124 
 wheel_diameter_left: 0.124
 wheel_diameter_right: 0.075 
-wheel_track: 0.2465 #grey wheels corrected after angular calibration; change this parameter by dividing it by your correction factor.
+wheel_track: 0.3302 #grey wheels corrected after angular calibration; change this parameter by dividing it by your correction factor.
 
 encoder_resolution: 6400 # From Pololu for 100:1 motors
 gear_reduction: 1 

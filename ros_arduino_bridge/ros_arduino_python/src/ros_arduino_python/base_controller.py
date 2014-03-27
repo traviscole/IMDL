@@ -23,19 +23,22 @@
 import roslib; roslib.load_manifest('ros_arduino_python')
 import rospy
 import os
+from dynamic_reconfigure.server import Server
+from ros_arduino_python.cfg import PIDConfig
 
 from math import sin, cos, pi
 from geometry_msgs.msg import Quaternion, Twist, Pose
 from nav_msgs.msg import Odometry
 from tf.broadcaster import TransformBroadcaster
+
+from ros_arduino_python.covariances import ODOM_POSE_COVARIANCE, ODOM_TWIST_COVARIANCE
  
 """ Class to receive Twist commands and publish Odometry data """
 class BaseController:
-    def __init__(self, arduino, base_frame):
+    def __init__(self, arduino):
         self.arduino = arduino
-        self.base_frame = base_frame
         self.rate = float(rospy.get_param("~base_controller_rate", 10))
-        self.timeout = rospy.get_param("~base_controller_timeout", 1.0)
+        self.timeout = rospy.get_param('~base_controller_timeout', 1.0)
         self.stopped = False
                  
         pid_params = dict()
@@ -47,6 +50,8 @@ class BaseController:
         pid_params['Kd'] = rospy.get_param("~Kd", 12)
         pid_params['Ki'] = rospy.get_param("~Ki", 0)
         pid_params['Ko'] = rospy.get_param("~Ko", 50)
+
+	self.publish_tf = rospy.get_param('~publish_tf', True)
         
         self.accel_limit = rospy.get_param('~accel_limit', 0.1)
         self.motors_reversed = rospy.get_param("~motors_reversed", False)
@@ -88,10 +93,17 @@ class BaseController:
         
         # Set up the odometry broadcaster
         self.odomPub = rospy.Publisher('odom', Odometry)
-        self.odomBroadcaster = TransformBroadcaster()
         
+        if (self.publish_tf):
+            self.odomBroadcaster = TransformBroadcaster()
+		
+        # Enable dynamic reconfigure
+        srv = Server(PIDConfig, self.reconfig)
+
         rospy.loginfo("Started base controller for a base of " + str(self.wheel_track) + "m wide with " + str(self.encoder_resolution) + " ticks per rev")
-        rospy.loginfo("Publishing odometry data at: " + str(self.rate) + " Hz using " + str(self.base_frame) + " as base frame")
+        rospy.loginfo("Publishing odometry data at: " + str(self.rate) + " Hz")
+        if (self.publish_tf):
+	    rospy.loginfo("Publishing odom tf transforms")
         
     def setup_pid(self, pid_params):
         # Check to see if any PID parameters are missing
@@ -121,7 +133,7 @@ class BaseController:
         if now > self.t_next:
             # Read the encoders
             try:
-                left_enc1, right_enc1 = self.arduino.get_encoder_counts()
+                left_enc, right_enc = self.arduino.get_encoder_counts()
             except:
                 self.bad_encoder_count += 1
                 rospy.logerr("Encoder exception count: " + str(self.bad_encoder_count))
@@ -130,9 +142,6 @@ class BaseController:
             dt = now - self.then
             self.then = now
             dt = dt.to_sec()
-            
-            left_enc = -left_enc1
-            right_enc = -right_enc1
             
             # calculate odometry
             if self.enc_left == None:
@@ -164,19 +173,23 @@ class BaseController:
             quaternion.y = 0.0
             quaternion.z = sin(self.th / 2.0)
             quaternion.w = cos(self.th / 2.0)
-    
-            # Create the odometry transform frame broadcaster.
-            self.odomBroadcaster.sendTransform(
-                (self.x, self.y, 0), 
-                (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
-                rospy.Time.now(),
-                self.base_frame,
-                "odom"
-                )
+    		
+            if (self.publish_tf):
+                # Create the odometry transform frame broadcaster.
+                self.odomBroadcaster.sendTransform(
+                    (self.x, self.y, 0), 
+                    (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
+                    rospy.Time.now(),
+                    "base_footprint",
+                    "odom"
+                    )
     
             odom = Odometry()
-            odom.header.frame_id = "odom"
-            odom.child_frame_id = self.base_frame
+
+            odom.header.frame_id = "odom" 
+            odom.child_frame_id = "base_footprint"
+            odom.pose.covariance = ODOM_POSE_COVARIANCE
+            odom.twist.covariance = ODOM_TWIST_COVARIANCE
             odom.header.stamp = now
             odom.pose.pose.position.x = self.x
             odom.pose.pose.position.y = self.y
@@ -241,9 +254,23 @@ class BaseController:
             
         self.v_des_left = int(left * self.ticks_per_meter / self.arduino.PID_RATE)
         self.v_des_right = int(right * self.ticks_per_meter / self.arduino.PID_RATE)
-        
+		
+    def reconfig(self, config, level):
+        rospy.loginfo("""Reconfigure Request: {Kp}, {Ki}, {Kd}, {Ko}, {lin_x}, {ang_z}""".format(**config))
+        self.Kp = config['Kp']
+        self.Kd = config['Kd']
+        self.Ki = config['Ki']
+        self.Ko = config['Ko']
 
+        req =  Twist()
+        req.linear.x = config['lin_x']         # m/s
+        req.angular.z = config['ang_z']       # rad/s
         
+        self.arduino.update_pid(self.Kp, self.Kd, self.Ki, self.Ko)
+        self.cmdVelCallback(req)
+        self.timeout = config['base_controller_timeout']
+        return config
+
 
     
 

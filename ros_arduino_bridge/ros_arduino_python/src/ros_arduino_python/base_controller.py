@@ -183,14 +183,14 @@ class BaseController:
                     (self.x, self.y, 0), 
                     (quaternion.x, quaternion.y, quaternion.z, quaternion.w),
                     rospy.Time.now(),
-                    "base_footprint",
+                    "base_link",
                     "odom"
                     )
     
             odom = Odometry()
 
             odom.header.frame_id = "odom" 
-            odom.child_frame_id = "base_footprint"
+            odom.child_frame_id = "base_link"
             odom.pose.covariance = ODOM_POSE_COVARIANCE
             odom.twist.covariance = ODOM_TWIST_COVARIANCE
             odom.header.stamp = now

@@ -133,7 +133,7 @@ class BaseController:
         if now > self.t_next:
             # Read the encoders
             try:
-                left_enc, right_enc = self.arduino.get_encoder_counts()
+                left_enc1, right_enc1 = self.arduino.get_encoder_counts()
             except:
                 self.bad_encoder_count += 1
                 rospy.logerr("Encoder exception count: " + str(self.bad_encoder_count))
@@ -142,6 +142,9 @@ class BaseController:
             dt = now - self.then
             self.then = now
             dt = dt.to_sec()
+            
+            left_enc = -left_enc1
+            right_enc = -right_enc1
             
             # calculate odometry
             if self.enc_left == None:
